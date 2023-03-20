@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sqlite_demo/models/person.dart';
 
+import '../utils/db_helper.dart';
+
 class PersonDetails extends StatefulWidget {
   const PersonDetails({Key? key, required this.person}) : super(key: key);
 
@@ -12,6 +14,7 @@ class PersonDetails extends StatefulWidget {
 
 class _PersonDetailsState extends State<PersonDetails> {
 
+  DbHelper helper = DbHelper();
   TextEditingController nameController = TextEditingController();
   TextEditingController ageController = TextEditingController();
 
@@ -21,10 +24,11 @@ class _PersonDetailsState extends State<PersonDetails> {
     ageController.text = widget.person.age.toString();
 
     return Scaffold(
-      backgroundColor: Colors.cyanAccent,
+      backgroundColor: Colors.deepPurple,
       appBar: AppBar(
         title: Text(widget.person.name),
-        backgroundColor: Colors.pink,
+        backgroundColor: Colors.deepPurple,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -77,7 +81,10 @@ class _PersonDetailsState extends State<PersonDetails> {
                         ) ,
                         child: const Text( 'Save',textScaleFactor: 1.5,),
                         onPressed: () {
-
+                          Person person = widget.person;
+                          person.name = nameController.text;
+                          person.age = int.parse(ageController.text);
+                          _saveData(person);
                         },
                       ),
                     ),
@@ -94,7 +101,9 @@ class _PersonDetailsState extends State<PersonDetails> {
                         ) ,
                         child: const Text( 'Delete',textScaleFactor: 1.5,),
                         onPressed: () {
-
+                          Person person = widget.person;
+                          _deleteData(person);
+                          print("Person Deleted Successfully");
                         },
                       ),
                     ),
@@ -106,6 +115,24 @@ class _PersonDetailsState extends State<PersonDetails> {
         ),
       ),
     );
+  }
+
+  void _saveData(Person person)async{
+    if(person.id ==0){
+      await helper.insertPerson(person);
+      print("Person Added Successfully");
+    }else{
+      await helper.updatePerson(person);
+      print("Person Updated Successfully");
+    }
+    moveToLastScreen();
+  }
+
+  void _deleteData(Person person)async{
+    if(person.id > 0) {
+      await helper.deletePerson(person);
+    }
+    moveToLastScreen();
   }
 
   void moveToLastScreen(){
